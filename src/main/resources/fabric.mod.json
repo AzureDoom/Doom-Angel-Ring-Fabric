@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "doomangelring",
+  "version": "${version}",
+
+  "name": "Doom Angel Ring",
+  "description": "This mod adds an Angel Ring, which allows you to fly.",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/azuredooms-angel-ring-fabric",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "MIT",
+  "icon": "assets/doomangelring/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "mod.azure.doomangelring.DoomAngelRing"
+    ]
+  },
+  "mixins": [
+    "doomangelring.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}

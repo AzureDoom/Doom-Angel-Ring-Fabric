@@ -1,0 +1,22 @@
+{
+	"result": {
+		"item": "doomangelring:itemdoomangelring"
+	},
+	"type": "crafting_shaped",
+	"pattern": [
+		"FGF",
+		"GEG",
+		"GGG"
+	],
+	"key": {
+		"F": {
+			"item": "minecraft:feather"
+		},
+		"E": {
+			"item": "minecraft:elytra"
+		},
+		"G": {
+			"item": "minecraft:gold_ingot"
+		}
+	}
+}

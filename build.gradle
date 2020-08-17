@@ -1,0 +1,97 @@
+plugins {
+	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'maven-publish'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "top.theillusivec4.curios:curios-fabric:${curios_version}" 
+	//Cloth Config
+    modApi("me.shedaniel.cloth:config-2:4.7.0-unstable"){
+      exclude module: 'fabric-api'
+    }
+    include "me.shedaniel.cloth:config-2:4.7.0-unstable"
+    
+    //Auto Config
+    modImplementation("me.sargunvohra.mcmods:autoconfig1u:3.2.0-unstable") {
+      exclude module: 'fabric-api'
+    }
+    include "me.sargunvohra.mcmods:autoconfig1u:3.2.0-unstable"
+    
+    //Mod Menu
+    modImplementation("io.github.prospector:modmenu:1.14.6+build.31") {
+      exclude module: 'fabric-api'
+    }
+}
+
+repositories {
+	maven {
+		url = "https://maven.theillusivec4.top/"
+	}
+	maven {	
+		url = 'https://maven.fabricmc.net/io/github/prospector/modmenu/'
+	}
+	maven {
+        name = "Ladysnake Libs"
+        url = 'https://dl.bintray.com/ladysnake/libs'
+    }
+	maven {
+        url = "https://www.cursemaven.com"
+    }
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	from(sourceSets.main.resources.srcDirs) {
+		include "fabric.mod.json"
+		expand "version": project.version
+	}
+
+	from(sourceSets.main.resources.srcDirs) {
+		exclude "fabric.mod.json"
+	}
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = "sources"
+	from sourceSets.main.allSource
+}
+
+jar {
+	from "LICENSE"
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			// add all the jars that should be included when publishing to maven
+			artifact(remapJar) {
+				builtBy remapJar
+			}
+			artifact(sourcesJar) {
+				builtBy remapSourcesJar
+			}
+		}
+	}
+
+	// select the repositories you want to publish to
+	repositories {
+		// uncomment to publish to the local maven
+		// mavenLocal()
+	}
+}
