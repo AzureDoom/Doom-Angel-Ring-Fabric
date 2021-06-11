@@ -1,11 +1,21 @@
+buildscript {
+    repositories {
+        jcenter()
+    	maven { url  = 'https://plugins.gradle.org/m2/' }
+    }
+}
+
 plugins {
-	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'fabric-loom' version '0.8-SNAPSHOT'
 	id 'maven-publish'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -16,51 +26,29 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "top.theillusivec4.curios:curios-fabric:${curios_version}" 
-	//Cloth Config
-    modApi("me.shedaniel.cloth:config-2:4.7.0-unstable"){
-      exclude module: 'fabric-api'
-    }
-    include "me.shedaniel.cloth:config-2:4.7.0-unstable"
-    
-    //Auto Config
-    modImplementation("me.sargunvohra.mcmods:autoconfig1u:3.2.0-unstable") {
-      exclude module: 'fabric-api'
-    }
-    include "me.sargunvohra.mcmods:autoconfig1u:3.2.0-unstable"
-    
-    //Mod Menu
-    modImplementation("io.github.prospector:modmenu:1.14.6+build.31") {
-      exclude module: 'fabric-api'
-    }
+	modImplementation "dev.emi:trinkets:${trinkets_version}"
 }
 
 repositories {
 	maven {
-		url = "https://maven.theillusivec4.top/"
-	}
-	maven {	
-		url = 'https://maven.fabricmc.net/io/github/prospector/modmenu/'
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
 	}
 	maven {
-        name = "Ladysnake Libs"
-        url = 'https://dl.bintray.com/ladysnake/libs'
-    }
+		name = "Ladysnake Libs"
+		url = "https://ladysnake.jfrog.io/artifactory/mods"
+	}
 	maven {
         url = "https://www.cursemaven.com"
     }
+    maven { url  = 'https://plugins.gradle.org/m2/' }
 }
 
 processResources {
-	inputs.property "version", project.version
+    inputs.property "version", project.version
 
-	from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
+	filesMatching("fabric.mod.json") {
 		expand "version": project.version
-	}
-
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
 	}
 }
 
@@ -77,54 +65,52 @@ jar {
 	from "LICENSE"
 }
 
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-		}
-	}
-
-	// select the repositories you want to publish to
-	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
-	}
+processResources {
+	doLast {
+        def jsonMinifyStart = System.currentTimeMillis()
+        def jsonMinified = 0
+        def jsonBytesSaved = 0
+        fileTree(dir: outputs.files.asPath, include: '**/*.json').each { 
+            File file = it
+            jsonMinified++
+            def oldLength = file.length()
+            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
+            jsonBytesSaved += oldLength - file.length()
+        }
+        println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
+    }
 }
 
-curseforge {
+if (file('key.properties').exists()) {
+    curseforge {
 
-    def curseProp = new Properties()
-    File secretPropsFile = file("key.properties")
-    curseProp.load(secretPropsFile.newInputStream())
+    	def curseProp = new Properties()
+    	File secretPropsFile = file("key.properties")
+    	curseProp.load(secretPropsFile.newInputStream())
 
-    project {
-        apiKey = curseProp.getProperty('curseKey')
-        id = "${curse_id}"
-        releaseType = "${curse_release}"
-        changelogType = 'text'
-        changelog = file('CHANGELOG.txt')
-        addGameVersion("1.16.3")
-        addGameVersion("1.16.4")
-        addGameVersion("Fabric")
-        addGameVersion("Java 8")
+    	project {
+        	apiKey = curseProp.getProperty('curseKey')
+        	id = "${curse_id}"
+        	releaseType = "${curse_release}"
+        	changelogType = 'text'
+        	changelog = file('CHANGELOG.txt')
+			addGameVersion("1.17")
+			addGameVersion("Fabric")
+			addGameVersion("Java 16")
 
-        relations {
-            requiredDependency 'fabric-api'      
-        }
-        mainArtifact(remapJar)
+        	relations {
+            	requiredDependency 'fabric-api'  
+            	requiredDependency 'trinkets-fabric'     
+        	}
+        	mainArtifact(remapJar)
 
-        afterEvaluate {
-            uploadTask.dependsOn("remapJar")
-        }
-    }
-    options {
-    	//debug = true
-        forgeGradleIntegration = false
+        	afterEvaluate {
+            	uploadTask.dependsOn("remapJar")
+        	}
+    	}
+    	options {
+    		//debug = true
+        	forgeGradleIntegration = false
+    	}
     }
 }
