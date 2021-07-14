@@ -95,6 +95,7 @@ if (file('key.properties').exists()) {
         	changelogType = 'text'
         	changelog = file('CHANGELOG.txt')
 			addGameVersion("1.17")
+			addGameVersion("1.17.1")
 			addGameVersion("Fabric")
 			addGameVersion("Java 16")
 
