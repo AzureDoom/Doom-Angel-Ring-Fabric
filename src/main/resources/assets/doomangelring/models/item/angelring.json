@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "doomangelring:items/angelring"
+    "layer0": "doomangelring:item/angelring"
   }
 }

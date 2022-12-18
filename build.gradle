@@ -28,8 +28,8 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "dev.emi:trinkets:3.4.0"
-	modImplementation ("com.terraformersmc:modmenu:4.0.6")
+    modImplementation "dev.emi:trinkets:3.5.0"
+	modImplementation ("com.terraformersmc:modmenu:5.0.1")
 }
 
 repositories {
@@ -94,8 +94,9 @@ if (file('key.properties').exists()) {
         	releaseType = "release"
         	changelogType = 'text'
         	changelog = file('CHANGELOG.txt')
-		addGameVersion("1.19.2")
+		addGameVersion("1.19.3")
 		addGameVersion("Fabric")
+		addGameVersion("Quilt")
 		addGameVersion("Java 17")
 
         	relations {
@@ -123,11 +124,11 @@ if (file('key.properties').exists()) {
 		token = modrinthProp.getProperty('modrinthKey')
 		projectId = 'VpVrx0oi' 
 		versionNumber = project.mod_version 
-		versionName = 'Fabric 1.19.2'
+		versionName = 'Fabric 1.19.3'
 		uploadFile = remapJar 
 		changelog = rootProject.file("changelog.txt").text
-		gameVersions = ['1.19.2']
-		loaders = ['fabric']
+		gameVersions = ['1.19.3']
+		loaders = ['fabric','quilt']
 		dependencies { 
         	required.project "fabric-api"
    		}

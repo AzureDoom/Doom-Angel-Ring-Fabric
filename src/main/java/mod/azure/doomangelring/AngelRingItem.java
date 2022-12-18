@@ -7,13 +7,12 @@ import dev.emi.trinkets.api.TrinketItem;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 
 public class AngelRingItem extends TrinketItem {
 
 	public AngelRingItem() {
-		super(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
+		super(new Item.Settings().maxCount(1));
 	}
 
 	@Override
