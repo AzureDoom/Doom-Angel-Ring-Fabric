@@ -5,10 +5,10 @@
 	"name": "Doom Angel Ring",
 	"description": "This mod adds an Angel Ring, which allows you to fly.",
 	"authors": [
-		"Me!"
+		"AzureDoom"
 	],
 	"contact": {
-		"homepage": "https://www.curseforge.com/minecraft/mc-mods/azuredooms-angel-ring-fabric",
+		"homepage": "https://modrinth.com/mod/azuredooms-angel-ring",
 		"sources": "https://github.com/AzureDoom/Doom-Angel-Ring-Fabric/tree/1.17"
 	},
 	"license": "MIT",
@@ -19,9 +19,6 @@
 			"mod.azure.doomangelring.DoomAngelRing"
 		]
 	},
-	"mixins": [
-		"doomangelring.mixins.json"
-	],
 	"depends": {
 		"fabricloader": ">=0.14.8",
     	"fabric": "*",
