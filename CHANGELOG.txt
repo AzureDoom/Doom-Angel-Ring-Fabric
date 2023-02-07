@@ -1,3 +1,9 @@
-v.1.0.4
+v.2.0.0
 
-- zh_cn.json added. Pull Request #4
+- Rewrote mod. 
+- Added config for: 
+   - Max Ring Durability
+   - Ticks Until Ring Takes Damage When Flying
+   - How much damage it does on that damage tick
+   - Whether or not the ring is kept on death, default no.
+- Added tag for defining repair items. data/doomangelring/tags/items/doomangelring_repair.json
