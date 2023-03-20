@@ -45,14 +45,13 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.layered() {
         officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-1.19.3:2022.12.18@zip")
     }
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "maven.modrinth:midnightlib:1.1.0-fabric"
-    shade group: 'maven.modrinth', name: 'midnightlib', version: '1.1.0-fabric'
-    modImplementation "dev.emi:trinkets:3.5.0"
-	modImplementation ("com.terraformersmc:modmenu:5.0.2")
+	modImplementation "maven.modrinth:midnightlib:1.2.0-fabric"
+    shade group: 'maven.modrinth', name: 'midnightlib', version: '1.2.0-fabric'
+    modImplementation "dev.emi:trinkets:3.6.0"
+	modImplementation ("com.terraformersmc:modmenu:6.1.0-rc.4")
 }
 
 shadowJar {
@@ -139,7 +138,7 @@ if (file('key.properties').exists()) {
         	releaseType = "release"
         	changelogType = 'text'
         	changelog = file('CHANGELOG.txt')
-		addGameVersion("1.19.3")
+		addGameVersion("1.19.4")
 		addGameVersion("Fabric")
 		addGameVersion("Quilt")
 		addGameVersion("Java 17")
@@ -170,10 +169,10 @@ if (file('key.properties').exists()) {
 		token = modrinthProp.getProperty('modrinthKey')
 		projectId = 'VpVrx0oi' 
 		versionNumber = project.mod_version 
-		versionName = 'Fabric 1.19.3'
+		versionName = 'Fabric 1.19.4'
 		uploadFile = remapJar 
 		changelog = rootProject.file("changelog.txt").text
-		gameVersions = ['1.19.3']
+		gameVersions = ['1.19.4']
 		loaders = ['fabric','quilt']
 		dependencies { 
         	required.project "fabric-api"
