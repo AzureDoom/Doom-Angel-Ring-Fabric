@@ -37,7 +37,7 @@ public class AngelRingItem extends TrinketItem {
 				if (!player.isOnGround()) {
 					damageTicks++;
 					if (damageTicks >= DoomAngelRingConfig.ticks_until_damage) {
-						stack.hurt(DoomAngelRingConfig.ring_damage_on_tick, null, (ServerPlayer) player);
+						stack.hurt(DoomAngelRingConfig.ring_damage_on_tick, player.getRandom(), (ServerPlayer) player);
 						damageTicks = 0;
 					}
 				}
