@@ -3,15 +3,11 @@ buildscript {
         jcenter()
     	maven { url  = 'https://plugins.gradle.org/m2/' }
     }
-    dependencies {
-        classpath "gradle.plugin.com.github.johnrengelman:shadow:7.1.0"
-    }
 }
 
 plugins {
     id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id "com.modrinth.minotaur" version "2.+"
 }
@@ -49,18 +45,9 @@ dependencies {
     }
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation 'dev.toma.configuration:Configuration:2.1.0'
-    shade group: 'dev.toma.configuration', name: 'Configuration', version: '2.1.0'
+  	modImplementation 'mod.azure.azurelib:azurelib-fabric-1.19.4:1.0.13'
     modImplementation "dev.emi:trinkets:3.6.0"
 	modImplementation ("com.terraformersmc:modmenu:6.1.0-rc.4")
-}
-
-shadowJar {
-    configurations = [project.configurations.shade]
-    from sourceSets.main.output
-    duplicatesStrategy = 'exclude'
-    relocate 'dev.toma', 'mod.azure.doomangelring.shadowed.configuration'
-    classifier 'dev'
 }
 
 processResources {
@@ -82,15 +69,6 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
-}
-
-artifacts {
-    archives shadowJar
-}
-
-remapJar {
-    dependsOn(shadowJar)
-    inputFile = shadowJar.archiveFile
 }
 
 publishing {
@@ -146,6 +124,7 @@ if (file('key.properties').exists()) {
 
         	relations {
             	requiredDependency 'fabric-api'  
+            	requiredDependency 'azurelib' 
             	requiredDependency 'trinkets'  
         	}
         	mainArtifact(remapJar)
@@ -178,6 +157,7 @@ if (file('key.properties').exists()) {
 		dependencies { 
         	required.project "fabric-api"
         	required.project "trinkets"
+        	required.project "azurelib"
    		}
 	}
 }
