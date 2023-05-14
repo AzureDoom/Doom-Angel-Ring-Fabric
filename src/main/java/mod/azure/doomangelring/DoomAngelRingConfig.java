@@ -1,11 +1,17 @@
 package mod.azure.doomangelring;
 
-import eu.midnightdust.lib.config.MidnightConfig;
+import dev.toma.configuration.config.Config;
+import dev.toma.configuration.config.Configurable;
 
-public class DoomAngelRingConfig extends MidnightConfig {
+@Config(id = DoomAngelRing.MODID)
+public class DoomAngelRingConfig {
 
-	@Entry public static int max_ring_durability = 900;
-	@Entry public static int ticks_until_damage = 20;
-	@Entry public static int ring_damage_on_tick = 1;
-	@Entry public static boolean keep_ring_on_death = false;
+	@Configurable
+	public int max_ring_durability = 900;
+	@Configurable
+	public int ticks_until_damage = 20;
+	@Configurable
+	public int ring_damage_on_tick = 1;
+	@Configurable
+	public boolean keep_ring_on_death = false;
 }

@@ -14,7 +14,7 @@ public class AngelRingItem extends TrinketItem {
 	private int damageTicks;
 
 	public AngelRingItem() {
-		super(new Item.Properties().stacksTo(1).durability(DoomAngelRingConfig.max_ring_durability));
+		super(new Item.Properties().stacksTo(1).durability(DoomAngelRing.config.max_ring_durability));
 	}
 
 	@Override
@@ -36,8 +36,8 @@ public class AngelRingItem extends TrinketItem {
 			if (player instanceof ServerPlayer)
 				if (!player.isOnGround()) {
 					damageTicks++;
-					if (damageTicks >= DoomAngelRingConfig.ticks_until_damage) {
-						stack.hurt(DoomAngelRingConfig.ring_damage_on_tick, player.getRandom(), (ServerPlayer) player);
+					if (damageTicks >= DoomAngelRing.config.ticks_until_damage) {
+						stack.hurt(DoomAngelRing.config.ring_damage_on_tick, player.getRandom(), (ServerPlayer) player);
 						damageTicks = 0;
 					}
 				}
@@ -61,7 +61,7 @@ public class AngelRingItem extends TrinketItem {
 
 	@Override
 	public DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		return DoomAngelRingConfig.keep_ring_on_death == true ? DropRule.KEEP : DropRule.DROP;
+		return DoomAngelRing.config.keep_ring_on_death == true ? DropRule.KEEP : DropRule.DROP;
 	}
 
 	private void startFlying(Player player) {
