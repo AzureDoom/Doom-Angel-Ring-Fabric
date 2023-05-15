@@ -1,3 +1,8 @@
 {
-	"item.doomangelring.angelring": "Angel Ring"
+	"item.doomangelring.angelring": "Angel Ring",
+	"config.screen.doomangelring": "Doom Angel Ring Config",
+	"config.doomangelring.option.max_ring_durability": "Max Ring Durability",
+	"config.doomangelring.option.ticks_until_damage": "Ticks Until Ring Damage",
+	"config.doomangelring.option.ring_damage_on_tick": "Ring Damage on Tick",
+	"config.doomangelring.option.keep_ring_on_death": "Keep Ring on Death"
 }
