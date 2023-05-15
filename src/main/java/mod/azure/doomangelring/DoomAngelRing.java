@@ -14,12 +14,11 @@ import net.minecraft.world.item.Item;
 
 public class DoomAngelRing implements ModInitializer {
 
-	public static DoomAngelRingConfig config;
+	public static DoomAngelRingConfig config = AzureLibMod.registerConfig(DoomAngelRingConfig.class, ConfigFormats.json()).getConfigInstance();
 	public static final String MODID = "doomangelring";
 	public static final Item ANGEL_RING = new AngelRingItem();
 
-	public static final TagKey<Item> RING_REPAIR = TagKey.create(Registries.ITEM,
-			new ResourceLocation(MODID, "doomangelring_repair"));
+	public static final TagKey<Item> RING_REPAIR = TagKey.create(Registries.ITEM, new ResourceLocation(MODID, "doomangelring_repair"));
 
 	@Override
 	public void onInitialize() {
