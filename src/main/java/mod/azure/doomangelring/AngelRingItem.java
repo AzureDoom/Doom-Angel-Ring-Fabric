@@ -29,15 +29,14 @@ public class AngelRingItem extends TrinketItem {
 
 	@Override
 	public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		if (entity instanceof Player) {
-			Player player = ((Player) entity);
+		if (entity instanceof Player player) {
 			if (!player.getAbilities().flying)
 				startFlying(player);
-			if (player instanceof ServerPlayer)
-				if (!player.isOnGround()) {
+			if (player instanceof ServerPlayer serverplayer)
+				if (!serverplayer.isOnGround()) {
 					damageTicks++;
 					if (damageTicks >= DoomAngelRing.config.ticks_until_damage) {
-						stack.hurt(DoomAngelRing.config.ring_damage_on_tick, player.getRandom(), (ServerPlayer) player);
+						stack.hurt(DoomAngelRing.config.ring_damage_on_tick, serverplayer.getRandom(), serverplayer);
 						damageTicks = 0;
 					}
 				}
