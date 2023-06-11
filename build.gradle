@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.0-SNAPSHOT'
     id 'maven-publish'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id "com.modrinth.minotaur" version "2.+"
@@ -45,9 +45,9 @@ dependencies {
     }
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-  	modImplementation 'mod.azure.azurelib:azurelib-fabric-1.19.4:1.0.13'
-    modImplementation "dev.emi:trinkets:3.6.0"
-	modImplementation ("com.terraformersmc:modmenu:6.1.0-rc.4")
+  	modImplementation 'mod.azure.azurelib:azurelib-fabric-1.20:1.0.9'
+    modImplementation "dev.emi:trinkets:3.7.0"
+	modImplementation ("com.terraformersmc:modmenu:7.0.0-beta.2")
 }
 
 processResources {
@@ -117,10 +117,10 @@ if (file('key.properties').exists()) {
         	releaseType = "release"
         	changelogType = 'text'
         	changelog = file('CHANGELOG.txt')
-		addGameVersion("1.19.4")
-		addGameVersion("Fabric")
-		addGameVersion("Quilt")
-		addGameVersion("Java 17")
+        	addGameVersion("1.20")
+        	addGameVersion("Fabric")
+        	addGameVersion("Quilt")
+        	addGameVersion("Java 17")
 
         	relations {
             	requiredDependency 'fabric-api'  
@@ -149,10 +149,10 @@ if (file('key.properties').exists()) {
 		token = modrinthProp.getProperty('modrinthKey')
 		projectId = 'VpVrx0oi' 
 		versionNumber = project.mod_version 
-		versionName = 'Fabric 1.19.4'
+		versionName = 'Fabric 1.20'
 		uploadFile = remapJar 
 		changelog = rootProject.file("changelog.txt").text
-		gameVersions = ['1.19.4']
+		gameVersions = ['1.20']
 		loaders = ['fabric','quilt']
 		dependencies { 
         	required.project "fabric-api"

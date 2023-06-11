@@ -1,4 +1,3 @@
-v.2.0.5
+v.2.0.6
 
-- Fixes config null crash.
-- Fixes missing config lang.
+- Updated for 1.20!
