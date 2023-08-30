@@ -1,20 +1,28 @@
 package mod.azure.doomangelring;
 
-import dev.emi.trinkets.api.SlotReference;
-import dev.emi.trinkets.api.TrinketEnums.DropRule;
-import dev.emi.trinkets.api.TrinketItem;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
+import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.type.capability.ICurio;
 
-public class AngelRingItem extends TrinketItem {
+public class AngelRingItem extends Item {
 
 	private int damageTicks;
 
 	public AngelRingItem() {
-		super(new Item.Properties().stacksTo(1).durability(DoomAngelRing.config.max_ring_durability));
+		super(new Item.Properties().stacksTo(1).durability(Config.SERVER.max_ring_durability.get()));
 	}
 
 	@Override
@@ -28,53 +36,79 @@ public class AngelRingItem extends TrinketItem {
 	}
 
 	@Override
-	public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		if (entity instanceof Player player) {
-			if (!player.getAbilities().flying)
-				startFlying(player);
-			if (player instanceof ServerPlayer serverplayer)
-				if (!serverplayer.onGround()) {
-					damageTicks++;
-					if (damageTicks >= DoomAngelRing.config.ticks_until_damage) {
-						stack.hurt(DoomAngelRing.config.ring_damage_on_tick, serverplayer.getRandom(), serverplayer);
-						damageTicks = 0;
-					}
+	public ICapabilityProvider initCapabilities(final ItemStack stack, CompoundTag unused) {
+		final ICurio curio = new ICurio() {
+			@Override
+			public boolean canRightClickEquip() {
+				return true;
+			}
+
+			@Override
+			public void onEquip(String identifier, int index, LivingEntity livingEntity) {
+				if (livingEntity instanceof Player player) {
+					startPowers(player);
 				}
-		}
-		super.tick(stack, slot, entity);
+			}
+
+			@Override
+			public void onUnequip(String identifier, int index, LivingEntity livingEntity) {
+				if (livingEntity instanceof Player player)
+					stopPowers(player);
+			}
+
+			private void startPowers(Player player) {
+				if (!player.isCreative() && !player.isSpectator() && !player.onGround()) {
+					player.getAbilities().flying = true;
+					player.onUpdateAbilities();
+					if (player instanceof ServerPlayer serverplayer)
+						if (!serverplayer.onGround()) {
+							damageTicks++;
+							if (damageTicks >= Config.SERVER.ticks_until_damage.get()) {
+								stack.hurt(Config.SERVER.ring_damage_on_tick.get(), serverplayer.getRandom(), serverplayer);
+								damageTicks = 0;
+							}
+						}
+				}
+			}
+
+			private void stopPowers(Player player) {
+				if (!player.isCreative() && !player.isSpectator()) {
+					player.getAbilities().flying = false;
+					player.getAbilities().flying = false;
+					player.onUpdateAbilities();
+				}
+			}
+
+			@Override
+			public void curioTick(String identifier, int index, LivingEntity livingEntity) {
+				if (livingEntity instanceof Player player)
+					startPowers(player);
+			}
+
+			@Override
+			public boolean canEquip(String identifier, LivingEntity entityLivingBase) {
+				return !CuriosApi.getCuriosHelper().findFirstCurio(entityLivingBase, DoomAngelRing.ANGEL_RING.get()).isPresent();
+			}
+
+			@Override
+			public ItemStack getStack() {
+				return new ItemStack(DoomAngelRing.ANGEL_RING.get());
+			}
+		};
+
+		return new ICapabilityProvider() {
+			private final LazyOptional<ICurio> curioOpt = LazyOptional.of(() -> curio);
+
+			@Nonnull
+			@Override
+			public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+
+				return CuriosCapability.ITEM.orEmpty(cap, curioOpt);
+			}
+		};
 	}
 
-	@Override
-	public void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		if (entity instanceof Player)
-			startFlying((Player) entity);
-		super.onEquip(stack, slot, entity);
-	}
-
-	@Override
-	public void onUnequip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		if (entity instanceof Player)
-			stopFlying((Player) entity);
-		super.onUnequip(stack, slot, entity);
-	}
-
-	@Override
-	public DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		return DoomAngelRing.config.keep_ring_on_death == true ? DropRule.KEEP : DropRule.DROP;
-	}
-
-	private void startFlying(Player player) {
-		if (!player.isCreative() && !player.isSpectator()) {
-			player.getAbilities().flying = true;
-			player.onUpdateAbilities();
-		}
-	}
-
-	private void stopFlying(Player player) {
-		if (!player.isCreative() && !player.isSpectator()) {
-			player.getAbilities().flying = false;
-			player.getAbilities().flying = false;
-			player.onUpdateAbilities();
-		}
+	public static boolean isRingInCuriosSlot(ItemStack belt, LivingEntity player) {
+		return CuriosApi.getCuriosHelper().findFirstCurio(player, belt.getItem()).isPresent();
 	}
 }

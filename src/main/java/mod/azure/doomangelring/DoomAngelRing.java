@@ -1,29 +1,41 @@
 package mod.azure.doomangelring;
 
-import mod.azure.azurelib.AzureLibMod;
-import mod.azure.azurelib.config.format.ConfigFormats;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-public class DoomAngelRing implements ModInitializer {
-
-	public static DoomAngelRingConfig config = AzureLibMod.registerConfig(DoomAngelRingConfig.class, ConfigFormats.json()).getConfigInstance();
+@Mod(DoomAngelRing.MODID)
+public class DoomAngelRing {
 	public static final String MODID = "doomangelring";
-	public static final Item ANGEL_RING = new AngelRingItem();
-
 	public static final TagKey<Item> RING_REPAIR = TagKey.create(Registries.ITEM, new ResourceLocation(MODID, "doomangelring_repair"));
+	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+	public static final RegistryObject<Item> ANGEL_RING = ITEMS.register("angelring", () -> new AngelRingItem());
 
-	@Override
-	public void onInitialize() {
-		config = AzureLibMod.registerConfig(DoomAngelRingConfig.class, ConfigFormats.json()).getConfigInstance();
-		Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MODID, "angelring"), ANGEL_RING);
-		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT).register(entries -> entries.accept(ANGEL_RING));
+	public DoomAngelRing() {
+		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SERVER_SPEC, "doomangelring.toml");
+		Config.loadConfig(Config.SERVER_SPEC, FMLPaths.CONFIGDIR.get().resolve("doomangelring.toml").toString());
+
+		ITEMS.register(modEventBus);
+		MinecraftForge.EVENT_BUS.register(this);
+		modEventBus.addListener(this::addCreative);
+	}
+
+	private void addCreative(BuildCreativeModeTabContentsEvent event) {
+		if (event.getTabKey() == CreativeModeTabs.COMBAT)
+			event.accept(ANGEL_RING);
 	}
 }

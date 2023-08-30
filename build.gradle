@@ -1,107 +1,97 @@
-buildscript {
-    repositories {
-        jcenter()
-    	maven { url  = 'https://plugins.gradle.org/m2/' }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.gradle' version '[6.0.18,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+    id "com.modrinth.minotaur" version "2.+"
+    id 'com.matthewprenger.cursegradle' version '1.4.0'
+}
+
+import com.modrinth.minotaur.dependencies.ModDependency
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = archives_base_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+    generateRunFolders = true
+    runs {
+        configureEach {
+            workingDirectory project.file("run/${it.name}")
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+        }
     }
 }
 
-plugins {
-    id 'fabric-loom' version '1.0-SNAPSHOT'
-    id 'maven-publish'
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
-    id "com.modrinth.minotaur" version "2.+"
-}
-
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-import com.modrinth.minotaur.dependencies.ModDependency
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    maven { url "https://maven.theillusivec4.top/" }
+    maven { url "https://minecraft.curseforge.com/api/maven/" }
 	maven { url "https://cfa2.cursemaven.com" }
-    maven { url 'https://plugins.gradle.org/m2/' }
-	maven { url = "https://maven.terraformersmc.com/" }
-	maven { url = "https://ladysnake.jfrog.io/artifactory/mods" }
-	maven { url = "https://maven.kosmx.dev/" }
-	maven { url 'https://jitpack.io' }
-	maven { url 'https://api.modrinth.com/maven' }
-    maven { url 'https://dl.cloudsmith.io/public/azuredoom-mods/azurelib/maven/' }
-}
-
-configurations {
-    shade
+    mavenCentral()
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.layered() {
-        officialMojangMappings()
-    }
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-  	modImplementation 'mod.azure.azurelib:azurelib-fabric-1.20.1:1.0.15'
-    modImplementation "dev.emi:trinkets:3.7.0"
-	modImplementation ("com.terraformersmc:modmenu:7.0.0-beta.2")
+    minecraft "net.neoforged:forge:${minecraft_version}-${neo_version}"
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
 }
 
-processResources {
-    inputs.property "version", project.version
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            neo_version         : neo_version, neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description, pack_format_number: pack_format_number,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1', // We are version 1 of ourselves
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+    finalizedBy 'reobfJar'
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
-}
-
-java {
-	withSourcesJar()
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
-}
-
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-		}
-	}
-
-	repositories {
-	
-	}
-}
-
-processResources {
-	doLast {
-        def jsonMinifyStart = System.currentTimeMillis()
-        def jsonMinified = 0
-        def jsonBytesSaved = 0
-        fileTree(dir: outputs.files.asPath, include: '**/*.json').each { 
-            File file = it
-            jsonMinified++
-            def oldLength = file.length()
-            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
-            jsonBytesSaved += oldLength - file.length()
-        }
-        println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
-    }
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
 if (file('key.properties').exists()) {
@@ -113,29 +103,16 @@ if (file('key.properties').exists()) {
 
     	project {
         	apiKey = curseProp.getProperty('curseKey')
-        	id = "402762"
-        	releaseType = "release"
+        	id = "${curse_id}"
+        	releaseType = "${curse_release}"
         	changelogType = 'text'
         	changelog = file('CHANGELOG.txt')
-        	addGameVersion("1.20.1")
-        	addGameVersion("Fabric")
-        	addGameVersion("Quilt")
+        	addGameVersion("NeoForge")
         	addGameVersion("Java 17")
 
         	relations {
-            	requiredDependency 'fabric-api'  
-            	requiredDependency 'azurelib' 
-            	requiredDependency 'trinkets'  
+            	requiredDependency 'curios'  
         	}
-        	mainArtifact(remapJar)
-
-        	afterEvaluate {
-            	uploadTask.dependsOn("remapJar")
-        	}
-    	}
-    	options {
-    		//debug = true
-        	forgeGradleIntegration = false
     	}
     }
 }
@@ -147,17 +124,13 @@ if (file('key.properties').exists()) {
 		modrinthProp.load(secretPropsFile.newInputStream())
 		
 		token = modrinthProp.getProperty('modrinthKey')
-		projectId = 'VpVrx0oi' 
+		projectId = project.modrinth_id
 		versionNumber = project.mod_version 
-		versionName = 'Fabric 1.20.1'
-		uploadFile = remapJar 
+		uploadFile = jar 
 		changelog = rootProject.file("changelog.txt").text
-		gameVersions = ['1.20.1']
-		loaders = ['fabric','quilt']
+		loaders = ['neoforge']
 		dependencies { 
-        	required.project "fabric-api"
-        	required.project "trinkets"
-        	required.project "azurelib"
+        	required.project "curios"
    		}
 	}
 }
