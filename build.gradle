@@ -45,9 +45,12 @@ dependencies {
     }
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-  	modImplementation 'mod.azure.azurelib:azurelib-fabric-1.20.1:1.0.15'
-    modImplementation "dev.emi:trinkets:3.7.0"
-	modImplementation ("com.terraformersmc:modmenu:7.0.0-beta.2")
+  	modImplementation "mod.azure.azurelib:azurelib-fabric-${project.minecraft_version}:${project.azurelib_version}"
+	modImplementation "curse.maven:trinkets-341284:4657534"
+	modImplementation "curse.maven:cardinal-components-318449:4547791"
+	modImplementation "curse.maven:cardinal-components-base-318449:4576292"
+	modImplementation "curse.maven:cardinal-components-entity-318449:4547795"
+	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -134,7 +137,6 @@ if (file('key.properties').exists()) {
         	}
     	}
     	options {
-    		//debug = true
         	forgeGradleIntegration = false
     	}
     }
@@ -149,7 +151,6 @@ if (file('key.properties').exists()) {
 		token = modrinthProp.getProperty('modrinthKey')
 		projectId = 'VpVrx0oi' 
 		versionNumber = project.mod_version 
-		versionName = 'Fabric 1.20.1'
 		uploadFile = remapJar 
 		changelog = rootProject.file("changelog.txt").text
 		gameVersions = ['1.20.1']
