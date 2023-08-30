@@ -30,7 +30,7 @@ public class AngelRingItem extends TrinketItem {
 	@Override
 	public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
 		if (entity instanceof Player player) {
-			if (!player.getAbilities().flying)
+			if (!player.getAbilities().flying && !player.onGround())
 				startFlying(player);
 			if (player instanceof ServerPlayer serverplayer)
 				if (!serverplayer.onGround()) {
@@ -64,7 +64,7 @@ public class AngelRingItem extends TrinketItem {
 	}
 
 	private void startFlying(Player player) {
-		if (!player.isCreative() && !player.isSpectator()) {
+		if (!player.isCreative() && !player.isSpectator() && !player.onGround()) {
 			player.getAbilities().flying = true;
 			player.onUpdateAbilities();
 		}
