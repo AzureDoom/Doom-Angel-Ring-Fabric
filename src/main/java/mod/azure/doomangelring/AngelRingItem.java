@@ -22,7 +22,7 @@ public class AngelRingItem extends Item {
 	private int damageTicks;
 
 	public AngelRingItem() {
-		super(new Item.Properties().stacksTo(1).durability(Config.SERVER.max_ring_durability.get()));
+		super(new Item.Properties().stacksTo(1).durability(DoomAngelRing.config.max_ring_durability));
 	}
 
 	@Override
@@ -63,8 +63,8 @@ public class AngelRingItem extends Item {
 					if (player instanceof ServerPlayer serverplayer)
 						if (!serverplayer.onGround()) {
 							damageTicks++;
-							if (damageTicks >= Config.SERVER.ticks_until_damage.get()) {
-								stack.hurt(Config.SERVER.ring_damage_on_tick.get(), serverplayer.getRandom(), serverplayer);
+							if (damageTicks >= DoomAngelRing.config.ticks_until_damage) {
+								stack.hurt(DoomAngelRing.config.ring_damage_on_tick, serverplayer.getRandom(), serverplayer);
 								damageTicks = 0;
 							}
 						}

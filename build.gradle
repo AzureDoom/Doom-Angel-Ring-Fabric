@@ -8,8 +8,6 @@ plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
-import com.modrinth.minotaur.dependencies.ModDependency
-
 version = mod_version
 group = mod_group_id
 
@@ -49,13 +47,15 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url "https://maven.theillusivec4.top/" }
+    maven { url 'https://libs.azuredoom.com:4443/mods'}
     maven { url "https://minecraft.curseforge.com/api/maven/" }
-	maven { url "https://cfa2.cursemaven.com" }
+    maven { url "https://cfa2.cursemaven.com" }
     mavenCentral()
 }
 
 dependencies {
     minecraft "net.neoforged:forge:${minecraft_version}-${neo_version}"
+    implementation fg.deobf("mod.azure.azurelib:azurelib-neo-${minecraft_version}:${azurelib_version}")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
 }
@@ -97,40 +97,42 @@ tasks.withType(JavaCompile).configureEach {
 if (file('key.properties').exists()) {
     curseforge {
 
-    	def curseProp = new Properties()
-    	File secretPropsFile = file("key.properties")
-    	curseProp.load(secretPropsFile.newInputStream())
+        def curseProp = new Properties()
+        File secretPropsFile = file("key.properties")
+        curseProp.load(secretPropsFile.newInputStream())
 
-    	project {
-        	apiKey = curseProp.getProperty('curseKey')
-        	id = "${curse_id}"
-        	releaseType = "${curse_release}"
-        	changelogType = 'text'
-        	changelog = file('CHANGELOG.txt')
-        	addGameVersion("NeoForge")
-        	addGameVersion("Java 17")
+        project {
+            apiKey = curseProp.getProperty('curseKey')
+            id = "${curse_id}"
+            releaseType = "${curse_release}"
+            changelogType = 'text'
+            changelog = file('CHANGELOG.txt')
+            addGameVersion("NeoForge")
+            addGameVersion("Java 17")
 
-        	relations {
-            	requiredDependency 'curios'  
-        	}
-    	}
+            relations {
+                requiredDependency 'curios'
+                requiredDependency 'azurelib'
+            }
+        }
     }
 }
 
 if (file('key.properties').exists()) {
-	modrinth {
-		def modrinthProp = new Properties()
-		File secretPropsFile = file("key.properties")
-		modrinthProp.load(secretPropsFile.newInputStream())
-		
-		token = modrinthProp.getProperty('modrinthKey')
-		projectId = project.modrinth_id
-		versionNumber = project.mod_version 
-		uploadFile = jar 
-		changelog = rootProject.file("changelog.txt").text
-		loaders = ['neoforge']
-		dependencies { 
-        	required.project "curios"
-   		}
-	}
+    modrinth {
+        def modrinthProp = new Properties()
+        File secretPropsFile = file("key.properties")
+        modrinthProp.load(secretPropsFile.newInputStream())
+
+        token = modrinthProp.getProperty('modrinthKey')
+        projectId = project.modrinth_id
+        versionNumber = project.mod_version
+        uploadFile = jar
+        changelog = rootProject.file("changelog.txt").text
+        loaders = ['neoforge']
+        dependencies {
+            required.project "curios"
+            required.project("azurelib")
+        }
+    }
 }

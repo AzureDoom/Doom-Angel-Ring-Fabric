@@ -1,5 +1,7 @@
 package mod.azure.doomangelring;
 
+import mod.azure.azurelib.AzureLibMod;
+import mod.azure.azurelib.config.format.ConfigFormats;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -20,14 +22,14 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod(DoomAngelRing.MODID)
 public class DoomAngelRing {
 	public static final String MODID = "doomangelring";
+	public static DoomAngelRingConfig config;
 	public static final TagKey<Item> RING_REPAIR = TagKey.create(Registries.ITEM, new ResourceLocation(MODID, "doomangelring_repair"));
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 	public static final RegistryObject<Item> ANGEL_RING = ITEMS.register("angelring", () -> new AngelRingItem());
 
 	public DoomAngelRing() {
 		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SERVER_SPEC, "doomangelring.toml");
-		Config.loadConfig(Config.SERVER_SPEC, FMLPaths.CONFIGDIR.get().resolve("doomangelring.toml").toString());
+		config = AzureLibMod.registerConfig(DoomAngelRingConfig.class, ConfigFormats.json()).getConfigInstance();
 
 		ITEMS.register(modEventBus);
 		MinecraftForge.EVENT_BUS.register(this);
