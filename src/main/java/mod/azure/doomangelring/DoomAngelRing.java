@@ -1,6 +1,5 @@
 package mod.azure.doomangelring;
 
-import mod.azure.azurelib.AzureLib;
 import mod.azure.azurelib.AzureLibMod;
 import mod.azure.azurelib.config.format.ConfigFormats;
 import net.fabricmc.api.ModInitializer;
@@ -22,7 +21,6 @@ public class DoomAngelRing implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        AzureLib.initialize();
         Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(MODID, "angelring"), ANGEL_RING);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT).register(entries -> entries.accept(ANGEL_RING));
     }
