@@ -1,3 +1,4 @@
-v.1.0.0
+v.1.0.1
 
-- Neo Port of 2.0.8
+- Moved Config system to AzureLibs, tired of Forges config BS.
+- Cleaned up code.
