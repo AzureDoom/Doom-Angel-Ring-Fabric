@@ -47,7 +47,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url "https://maven.theillusivec4.top/" }
-    maven { url 'https://libs.azuredoom.com:4443/mods'}
+    maven { url 'https://libs.azuredoom.com:4443/mods' }
     maven { url "https://minecraft.curseforge.com/api/maven/" }
     maven { url "https://cfa2.cursemaven.com" }
     mavenCentral()
