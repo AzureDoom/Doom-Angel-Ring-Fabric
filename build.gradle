@@ -1,20 +1,20 @@
 buildscript {
     repositories {
         jcenter()
-    	maven { url  = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
     }
 }
 
 plugins {
-    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'fabric-loom' version '1.3-SNAPSHOT'
     id 'maven-publish'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id "com.modrinth.minotaur" version "2.+"
 }
 
-import groovy.json.JsonSlurper
+
 import groovy.json.JsonOutput
-import com.modrinth.minotaur.dependencies.ModDependency
+import groovy.json.JsonSlurper
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -24,14 +24,13 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	maven { url "https://cfa2.cursemaven.com" }
+    maven { url "https://cfa2.cursemaven.com" }
     maven { url 'https://plugins.gradle.org/m2/' }
-	maven { url = "https://maven.terraformersmc.com/" }
-	maven { url = "https://ladysnake.jfrog.io/artifactory/mods" }
-	maven { url = "https://maven.kosmx.dev/" }
-	maven { url 'https://jitpack.io' }
-	maven { url 'https://api.modrinth.com/maven' }
-    maven { url 'https://dl.cloudsmith.io/public/azuredoom-mods/azurelib/maven/' }
+    maven { url 'https://maven.terraformersmc.com/' }
+    maven { url 'https://maven.kosmx.dev/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://api.modrinth.com/maven' }
+    maven { url 'https://libs.azuredoom.com:4443/mods' }
 }
 
 configurations {
@@ -39,25 +38,23 @@ configurations {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.layered() {
-        officialMojangMappings()
-    }
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-  	modImplementation "mod.azure.azurelib:azurelib-fabric-${project.minecraft_version}:${project.azurelib_version}"
-	modImplementation "curse.maven:trinkets-341284:4657534"
-	modImplementation "curse.maven:cardinal-components-318449:4547791"
-	modImplementation "curse.maven:cardinal-components-base-318449:4576292"
-	modImplementation "curse.maven:cardinal-components-entity-318449:4547795"
-	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "mod.azure.azurelib:azurelib-fabric-${project.minecraft_version}:${project.azurelib_version}"
+    modImplementation "curse.maven:trinkets-341284:4657534"
+    modImplementation "curse.maven:cardinal-components-318449:4547791"
+    modImplementation "curse.maven:cardinal-components-base-318449:4576292"
+    modImplementation "curse.maven:cardinal-components-entity-318449:4547795"
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
     inputs.property "version", project.version
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -65,38 +62,38 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	withSourcesJar()
+    withSourcesJar()
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
 }
 
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-		}
-	}
+    publications {
+        mavenJava(MavenPublication) {
+            artifact(remapJar) {
+                builtBy remapJar
+            }
+            artifact(sourcesJar) {
+                builtBy remapSourcesJar
+            }
+        }
+    }
 
-	repositories {
-	
-	}
+    repositories {
+
+    }
 }
 
 processResources {
-	doLast {
+    doLast {
         def jsonMinifyStart = System.currentTimeMillis()
         def jsonMinified = 0
         def jsonBytesSaved = 0
-        fileTree(dir: outputs.files.asPath, include: '**/*.json').each { 
+        fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
             File file = it
             jsonMinified++
             def oldLength = file.length()
@@ -110,55 +107,55 @@ processResources {
 if (file('key.properties').exists()) {
     curseforge {
 
-    	def curseProp = new Properties()
-    	File secretPropsFile = file("key.properties")
-    	curseProp.load(secretPropsFile.newInputStream())
+        def curseProp = new Properties()
+        File secretPropsFile = file("key.properties")
+        curseProp.load(secretPropsFile.newInputStream())
 
-    	project {
-        	apiKey = curseProp.getProperty('curseKey')
-        	id = "402762"
-        	releaseType = "release"
-        	changelogType = 'text'
-        	changelog = file('CHANGELOG.txt')
-        	addGameVersion("1.20.1")
-        	addGameVersion("Fabric")
-        	addGameVersion("Quilt")
-        	addGameVersion("Java 17")
+        project {
+            apiKey = curseProp.getProperty('curseKey')
+            id = "402762"
+            releaseType = "release"
+            changelogType = 'text'
+            changelog = file('CHANGELOG.txt')
+            addGameVersion("1.20.1")
+            addGameVersion("Fabric")
+            addGameVersion("Quilt")
+            addGameVersion("Java 17")
 
-        	relations {
-            	requiredDependency 'fabric-api'  
-            	requiredDependency 'azurelib' 
-            	requiredDependency 'trinkets'  
-        	}
-        	mainArtifact(remapJar)
+            relations {
+                requiredDependency 'fabric-api'
+                requiredDependency 'azurelib'
+                requiredDependency 'trinkets'
+            }
+            mainArtifact(remapJar)
 
-        	afterEvaluate {
-            	uploadTask.dependsOn("remapJar")
-        	}
-    	}
-    	options {
-        	forgeGradleIntegration = false
-    	}
+            afterEvaluate {
+                uploadTask.dependsOn("remapJar")
+            }
+        }
+        options {
+            forgeGradleIntegration = false
+        }
     }
 }
 
 if (file('key.properties').exists()) {
-	modrinth {
-		def modrinthProp = new Properties()
-		File secretPropsFile = file("key.properties")
-		modrinthProp.load(secretPropsFile.newInputStream())
-		
-		token = modrinthProp.getProperty('modrinthKey')
-		projectId = 'VpVrx0oi' 
-		versionNumber = project.mod_version 
-		uploadFile = remapJar 
-		changelog = rootProject.file("changelog.txt").text
-		gameVersions = ['1.20.1']
-		loaders = ['fabric','quilt']
-		dependencies { 
-        	required.project "fabric-api"
-        	required.project "trinkets"
-        	required.project "azurelib"
-   		}
-	}
+    modrinth {
+        def modrinthProp = new Properties()
+        File secretPropsFile = file("key.properties")
+        modrinthProp.load(secretPropsFile.newInputStream())
+
+        token = modrinthProp.getProperty('modrinthKey')
+        projectId = 'VpVrx0oi'
+        versionNumber = project.mod_version
+        uploadFile = remapJar
+        changelog = rootProject.file("changelog.txt").text
+        gameVersions = ['1.20.1']
+        loaders = ['fabric', 'quilt']
+        dependencies {
+            required.project "fabric-api"
+            required.project "trinkets"
+            required.project "azurelib"
+        }
+    }
 }
