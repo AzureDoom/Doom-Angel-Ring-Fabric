@@ -1,3 +1,5 @@
-v.2.0.8
+v.2.0.9
+
+- Fixes crash with config
 
 - Fixed it so the ring does't tick damage when not in the air. 
