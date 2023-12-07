@@ -1,161 +1,116 @@
-buildscript {
-    repositories {
-        jcenter()
-        maven { url = 'https://plugins.gradle.org/m2/' }
-    }
-}
-
-plugins {
-    id 'fabric-loom' version '1.3-SNAPSHOT'
-    id 'maven-publish'
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
-    id "com.modrinth.minotaur" version "2.+"
-}
-
-
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
-repositories {
-    maven { url "https://cfa2.cursemaven.com" }
-    maven { url 'https://plugins.gradle.org/m2/' }
-    maven { url 'https://maven.terraformersmc.com/' }
-    maven { url 'https://maven.kosmx.dev/' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://api.modrinth.com/maven' }
-    maven { url 'https://libs.azuredoom.com:4443/mods' }
+plugins {
+    id 'fabric-loom' version '1.4-SNAPSHOT' apply(false)
+    id 'net.neoforged.gradle' version '[6.0,6.2)' apply(false)
+    id 'org.spongepowered.gradle.vanilla' version '0.2.1-SNAPSHOT' apply(false)
+    id("org.spongepowered.mixin") version "0.7-SNAPSHOT" apply(false)
 }
 
-configurations {
-    shade
-}
+subprojects {
+    apply plugin: 'java'
 
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "mod.azure.azurelib:azurelib-fabric-${project.minecraft_version}:${project.azurelib_version}"
-    modImplementation "curse.maven:trinkets-341284:4657534"
-    modImplementation "curse.maven:cardinal-components-318449:4547791"
-    modImplementation "curse.maven:cardinal-components-base-318449:4576292"
-    modImplementation "curse.maven:cardinal-components-entity-318449:4547795"
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-}
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.withSourcesJar()
+    java.withJavadocJar()
 
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+    jar {
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${mod_name}" }
+        }
+        manifest {
+            attributes([
+                    "Specification-Title"     : "tugkanses",
+                    "Specification-Vendor"    : "AzureDoom",
+                    "Specification-Version"   : "1", // We are version 1 of ourselves
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : project.mod_version,
+                    "Implementation-Vendor"   : "AzureDoom",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            ])
+        }
     }
-}
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
-}
-
-java {
-    withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+    sourcesJar {
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${mod_name}" }
         }
     }
 
     repositories {
-
-    }
-}
-
-processResources {
-    doLast {
-        def jsonMinifyStart = System.currentTimeMillis()
-        def jsonMinified = 0
-        def jsonBytesSaved = 0
-        fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
-            File file = it
-            jsonMinified++
-            def oldLength = file.length()
-            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
-            jsonBytesSaved += oldLength - file.length()
+        mavenCentral()
+        maven {
+            name = 'Sponge / Mixin'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
-        println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
+        maven {
+            name = 'BlameJared Maven (JEI / CraftTweaker / Bookshelf)'
+            url = 'https://maven.blamejared.com'
+        }
     }
-}
 
-if (file('key.properties').exists()) {
-    curseforge {
+    tasks.withType(JavaCompile).configureEach {
 
-        def curseProp = new Properties()
-        File secretPropsFile = file("key.properties")
-        curseProp.load(secretPropsFile.newInputStream())
+        it.options.encoding = 'UTF-8'
+        it.options.getRelease().set(17)
+    }
 
-        project {
-            apiKey = curseProp.getProperty('curseKey')
-            id = "402762"
-            releaseType = "release"
-            changelogType = 'text'
-            changelog = file('CHANGELOG.txt')
-            addGameVersion("1.20.1")
-            addGameVersion("Fabric")
-            addGameVersion("Quilt")
-            addGameVersion("Java 17")
+    processResources {
+        def expandProps = [
+                "mod_version"               : project.mod_version,
+                "group"                     : project.group, //Else we target the task's group.
+                "minecraft_version"         : project.minecraft_version,
+                "neo_version"               : project.neo_version,
+                "loader_version_range"      : project.loader_version_range,
+                "neo_version_range"         : project.neo_version_range,
+                "minecraft_version_range"   : project.minecraft_version_range,
+                "fabric_version"            : project.fabric_version,
+                "fabric_loader_version"     : project.fabric_loader_version,
+                "mod_name"                  : project.mod_name,
+                "mod_author"                : project.mod_author,
+                "mod_id"                    : project.mod_id,
+                "mod_license"               : project.mod_license,
+                "mod_description"           : project.mod_description,
+                "mod_credits"               : project.mod_credits,
+                "mod_logo"                  : project.mod_logo,
+                "mod_url"                   : project.mod_url,
+                "mod_issues"                : project.mod_issues,
+                "mod_sources"               : project.mod_sources,
+        ]
 
-            relations {
-                requiredDependency 'fabric-api'
-                requiredDependency 'azurelib'
-                requiredDependency 'trinkets'
+        filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json', 'META-INF/mods.toml']) {
+            expand expandProps
+        }
+        inputs.properties(expandProps)
+        doLast {
+            def jsonMinifyStart = System.currentTimeMillis()
+            def jsonMinified = 0
+            def jsonBytesSaved = 0
+            fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
+                File file = it
+                jsonMinified++
+                def oldLength = file.length()
+                file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
+                jsonBytesSaved += oldLength - file.length()
             }
-            mainArtifact(remapJar)
-
-            afterEvaluate {
-                uploadTask.dependsOn("remapJar")
-            }
-        }
-        options {
-            forgeGradleIntegration = false
+            println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
         }
     }
-}
 
-if (file('key.properties').exists()) {
-    modrinth {
-        def modrinthProp = new Properties()
-        File secretPropsFile = file("key.properties")
-        modrinthProp.load(secretPropsFile.newInputStream())
+    // Disables Gradle's custom module metadata from being published to maven. The
+    // metadata includes mapped dependencies which are not reasonably consumable by
+    // other mod developers.
+    tasks.withType(GenerateModuleMetadata).configureEach {
 
-        token = modrinthProp.getProperty('modrinthKey')
-        projectId = 'VpVrx0oi'
-        versionNumber = project.mod_version
-        uploadFile = remapJar
-        changelog = rootProject.file("changelog.txt").text
-        gameVersions = ['1.20.1']
-        loaders = ['fabric', 'quilt']
-        dependencies {
-            required.project "fabric-api"
-            required.project "trinkets"
-            required.project "azurelib"
+        enabled = false
+    }
+
+    // Tells gradle to show 1000 errors instead of the default count of 100.
+    // See: https://stackoverflow.com/a/31905248
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xmaxerrs" << "1000"
         }
     }
 }
