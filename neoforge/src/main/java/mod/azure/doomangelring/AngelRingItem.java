@@ -3,15 +3,16 @@ package mod.azure.doomangelring;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
+import org.jetbrains.annotations.NotNull;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
 import javax.annotation.Nonnull;
@@ -26,12 +27,12 @@ public class AngelRingItem extends Item {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) {
+    public boolean isFoil(@NotNull ItemStack stack) {
         return false;
     }
 
     @Override
-    public boolean isValidRepairItem(ItemStack stack, ItemStack ingredient) {
+    public boolean isValidRepairItem(@NotNull ItemStack stack, ItemStack ingredient) {
         return ingredient.is(CommonMod.RING_REPAIR);
     }
 
@@ -39,21 +40,18 @@ public class AngelRingItem extends Item {
     public ICapabilityProvider initCapabilities(final ItemStack stack, CompoundTag unused) {
         final ICurio curio = new ICurio() {
             @Override
-            public boolean canRightClickEquip() {
+            public boolean canEquipFromUse(SlotContext slotContext) {
                 return true;
             }
 
             @Override
-            public void onEquip(String identifier, int index, LivingEntity livingEntity) {
-                if (livingEntity instanceof Player player) {
-                    startPowers(player);
-                }
+            public void onEquip(SlotContext slotContext, ItemStack prevStack) {
+                if (slotContext.entity() instanceof Player player) startPowers(player);
             }
 
             @Override
-            public void onUnequip(String identifier, int index, LivingEntity livingEntity) {
-                if (livingEntity instanceof Player player)
-                    stopPowers(player);
+            public void onUnequip(SlotContext slotContext, ItemStack newStack) {
+                if (slotContext.entity() instanceof Player player) stopPowers(player);
             }
 
             private void startPowers(Player player) {
@@ -63,7 +61,9 @@ public class AngelRingItem extends Item {
                     if (player instanceof ServerPlayer serverplayer && !serverplayer.onGround()) {
                         damageTicks++;
                         if (damageTicks >= CommonMod.config.ticks_until_damage) {
-                            stack.hurt(CommonMod.config.ring_damage_on_tick, serverplayer.getRandom(), serverplayer);
+                            stack.hurtAndBreak(CommonMod.config.ring_damage_on_tick, serverplayer,
+                                    s -> CuriosApi.getCuriosHelper().setBrokenCurioConsumer(context -> {
+                                    }));
                             damageTicks = 0;
                         }
                     }
@@ -79,14 +79,14 @@ public class AngelRingItem extends Item {
             }
 
             @Override
-            public void curioTick(String identifier, int index, LivingEntity livingEntity) {
-                if (livingEntity instanceof Player player)
-                    startPowers(player);
+            public void curioTick(SlotContext slotContext) {
+                if (slotContext.entity() instanceof Player player) startPowers(player);
             }
 
             @Override
-            public boolean canEquip(String identifier, LivingEntity entityLivingBase) {
-                return !CuriosApi.getCuriosHelper().findFirstCurio(entityLivingBase, NeoForgeMod.ANGEL_RING.get()).isPresent();
+            public boolean canEquip(SlotContext slotContext) {
+                return CuriosApi.getCuriosHelper().findFirstCurio(slotContext.entity(),
+                        NeoForgeMod.ANGEL_RING.get()).isEmpty();
             }
 
             @Override
@@ -101,13 +101,8 @@ public class AngelRingItem extends Item {
             @Nonnull
             @Override
             public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-
                 return CuriosCapability.ITEM.orEmpty(cap, curioOpt);
             }
         };
-    }
-
-    public static boolean isRingInCuriosSlot(ItemStack belt, LivingEntity player) {
-        return CuriosApi.getCuriosHelper().findFirstCurio(player, belt.getItem()).isPresent();
     }
 }
