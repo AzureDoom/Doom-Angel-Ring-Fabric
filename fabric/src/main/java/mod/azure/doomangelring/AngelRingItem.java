@@ -14,7 +14,7 @@ public class AngelRingItem extends TrinketItem {
     private int damageTicks;
 
     public AngelRingItem() {
-        super(new Properties().stacksTo(1).durability(FabricLibMod.config.max_ring_durability));
+        super(new Properties().stacksTo(1).durability(CommonMod.config.max_ring_durability));
     }
 
     @Override
@@ -33,9 +33,8 @@ public class AngelRingItem extends TrinketItem {
             if (!player.getAbilities().flying && !player.onGround() && stack.getDamageValue() > 1) startFlying(player);
             if (player instanceof ServerPlayer serverplayer && !serverplayer.onGround()) {
                 damageTicks++;
-                if (damageTicks >= FabricLibMod.config.ticks_until_damage) {
-                    stack.hurtAndBreak(FabricLibMod.config.ring_damage_on_tick, serverplayer, s -> {
-                    });
+                if (damageTicks >= CommonMod.config.ticks_until_damage) {
+                    stack.hurtAndBreak(CommonMod.config.ring_damage_on_tick, serverplayer, LivingEntity.getEquipmentSlotForItem(stack));
                     damageTicks = 0;
                 }
             }
@@ -58,7 +57,7 @@ public class AngelRingItem extends TrinketItem {
 
     @Override
     public DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
-        return FabricLibMod.config.keep_ring_on_death ? DropRule.KEEP : DropRule.DROP;
+        return CommonMod.config.keep_ring_on_death ? DropRule.KEEP : DropRule.DROP;
     }
 
     private void startFlying(Player player) {

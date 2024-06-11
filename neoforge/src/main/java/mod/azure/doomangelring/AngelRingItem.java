@@ -1,24 +1,17 @@
 package mod.azure.doomangelring;
 
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
-import top.theillusivec4.curios.api.CuriosApi;
-import top.theillusivec4.curios.api.CuriosCapability;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class AngelRingItem extends Item {
+public class AngelRingItem extends Item implements ICurioItem {
 
     private int damageTicks;
 
@@ -37,72 +30,55 @@ public class AngelRingItem extends Item {
     }
 
     @Override
-    public ICapabilityProvider initCapabilities(final ItemStack stack, CompoundTag unused) {
-        final ICurio curio = new ICurio() {
-            @Override
-            public boolean canEquipFromUse(SlotContext slotContext) {
-                return true;
-            }
+    public boolean canEquipFromUse(SlotContext slotContext, ItemStack stack) {
+        return true;
+    }
 
-            @Override
-            public void onEquip(SlotContext slotContext, ItemStack prevStack) {
-                if (slotContext.entity() instanceof Player player) startPowers(player);
-            }
+    @Override
+    public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
+        if (slotContext.entity() instanceof Player player) startFlying(player);
+    }
 
-            @Override
-            public void onUnequip(SlotContext slotContext, ItemStack newStack) {
-                if (slotContext.entity() instanceof Player player) stopPowers(player);
-            }
+    @Override
+    public void onUnequip(SlotContext slotContext, ItemStack newStack, ItemStack stack) {
+        if (slotContext.entity() instanceof Player player) stopFlying(player);
+    }
 
-            private void startPowers(Player player) {
-                if (!player.isCreative() && !player.isSpectator() && !player.onGround()) {
-                    player.getAbilities().flying = true;
-                    player.onUpdateAbilities();
-                    if (player instanceof ServerPlayer serverplayer && !serverplayer.onGround()) {
-                        damageTicks++;
-                        if (damageTicks >= CommonMod.config.ticks_until_damage) {
-                            stack.hurtAndBreak(CommonMod.config.ring_damage_on_tick, serverplayer,
-                                    s -> CuriosApi.getCuriosHelper().setBrokenCurioConsumer(context -> {
-                                    }));
-                            damageTicks = 0;
-                        }
-                    }
+    @Override
+    public void curioTick(SlotContext slotContext, ItemStack stack) {
+        if (slotContext.entity() instanceof Player player) {
+            if (!player.getAbilities().flying && !player.onGround() && stack.getDamageValue() > 1) startFlying(player);
+            if (player instanceof ServerPlayer serverplayer && !serverplayer.onGround()) {
+                damageTicks++;
+                if (damageTicks >= CommonMod.config.ticks_until_damage) {
+                    stack.hurtAndBreak(CommonMod.config.ring_damage_on_tick, serverplayer, LivingEntity.getEquipmentSlotForItem(stack));
+                    damageTicks = 0;
                 }
             }
+            if (stack.getDamageValue() <= 1) stopFlying(player);
+        }
+    }
 
-            private void stopPowers(Player player) {
-                if (!player.isCreative() && !player.isSpectator()) {
-                    player.getAbilities().flying = false;
-                    player.getAbilities().flying = false;
-                    player.onUpdateAbilities();
-                }
-            }
+    @NotNull
+    @Override
+    public ICurio.DropRule getDropRule(SlotContext slotContext, DamageSource source, int lootingLevel, boolean recentlyHit, ItemStack stack) {
+        return CommonMod.config.keep_ring_on_death ? ICurio.DropRule.ALWAYS_KEEP : ICurio.DropRule.ALWAYS_DROP;
+    }
 
-            @Override
-            public void curioTick(SlotContext slotContext) {
-                if (slotContext.entity() instanceof Player player) startPowers(player);
-            }
+    private void startFlying(Player player) {
+        if (!player.isCreative() && !player.isSpectator() && !player.onGround()) {
+            player.getAbilities().flying = true;
+            player.getAbilities().mayfly = true;
+            player.onUpdateAbilities();
+        }
+    }
 
-            @Override
-            public boolean canEquip(SlotContext slotContext) {
-                return CuriosApi.getCuriosHelper().findFirstCurio(slotContext.entity(),
-                        NeoForgeMod.ANGEL_RING.get()).isEmpty();
-            }
-
-            @Override
-            public ItemStack getStack() {
-                return new ItemStack(NeoForgeMod.ANGEL_RING.get());
-            }
-        };
-
-        return new ICapabilityProvider() {
-            private final LazyOptional<ICurio> curioOpt = LazyOptional.of(() -> curio);
-
-            @Nonnull
-            @Override
-            public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-                return CuriosCapability.ITEM.orEmpty(cap, curioOpt);
-            }
-        };
+    private void stopFlying(Player player) {
+        if (!player.isCreative() && !player.isSpectator()) {
+            player.getAbilities().flying = false;
+            player.getAbilities().flying = false;
+            player.getAbilities().mayfly = false;
+            player.onUpdateAbilities();
+        }
     }
 }

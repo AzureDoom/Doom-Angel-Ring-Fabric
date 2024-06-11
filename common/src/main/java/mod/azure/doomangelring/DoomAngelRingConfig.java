@@ -1,7 +1,7 @@
 package mod.azure.doomangelring;
 
-import mod.azure.azurelib.config.Config;
-import mod.azure.azurelib.config.Configurable;
+import mod.azure.azurelib.common.api.common.config.Config;
+import mod.azure.azurelib.common.internal.common.config.Configurable;
 
 @Config(id = CommonMod.MOD_ID)
 public class DoomAngelRingConfig {

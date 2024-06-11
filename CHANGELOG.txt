@@ -1,4 +1,0 @@
-v3.0.1
-
-- Fixes negative value generation on durability.
-- Updates Curios code to latest changes.

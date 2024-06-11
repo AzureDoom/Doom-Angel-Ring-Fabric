@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "${mod_id}",
-  "version": "${mod_version}",
+  "version": "${version}",
   "name": "${mod_name}",
   "description": "${mod_description}",
   "authors": [
@@ -28,7 +28,7 @@
     "fabric-api": "*",
     "java": ">=17",
     "minecraft": "~${minecraft_version}",
-    "trinkets": ">=3.7.0",
-    "azurelib": ">=2.0.16"
+    "trinkets": ">=${trinkets_version}",
+    "azurelib": ">=${azurelib_version}"
   }
 }
