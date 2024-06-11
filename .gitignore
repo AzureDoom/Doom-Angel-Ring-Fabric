@@ -27,6 +27,8 @@ logs
 # other
 eclipse
 run
+runClient
+runs
 
 # Files from Forge MDK
 forge*changelog.txt
