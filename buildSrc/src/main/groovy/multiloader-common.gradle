@@ -14,7 +14,6 @@ java {
 }
 
 repositories {
-    mavenCentral()
     // https://docs.gradle.org/current/userguide/declaring_repositories.html#declaring_content_exclusively_found_in_one_repository
     exclusiveContent {
         forRepository {
@@ -25,6 +24,15 @@ repositories {
         }
         filter { includeGroupAndSubgroups("org.spongepowered") }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'ParchmentMC'
+                url = 'https://maven.parchmentmc.org/'
+            }
+        }
+        filter { includeGroup('org.parchmentmc.data') }
+    }
     maven {
         name = 'BlameJared'
         url = 'https://maven.blamejared.com'
@@ -32,6 +40,11 @@ repositories {
     maven { url "https://maven.terraformersmc.com/" }
     maven { url "https://maven.terraformersmc.com/releases" } // modmenu
     maven { url 'https://libs.azuredoom.com:4443/mods' }
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url = "https://maven.shedaniel.me/" }
+    maven {
+        url "https://cursemaven.com"
+    }
 }
 
 dependencies {
@@ -95,8 +108,7 @@ processResources {
             "mod_credits": mod_credits,
             "java_version": java_version,
             "azurelib_version": azurelib_version,
-            "curios_version": curios_version,
-            "trinkets_version": trinkets_version
+            "accessories_version": accessories_version
     ]
 
     filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {

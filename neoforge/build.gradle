@@ -1,51 +1,51 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.neoforged.gradle.userdev' version "${neo_gradle_userdev_version}"
-    id 'me.modmuss50.mod-publish-plugin' version "${modmuss50_mod_publish_version}"
+    id 'net.neoforged.moddev'
+    id 'me.modmuss50.mod-publish-plugin'
 }
 
-def at = file('src/main/resources/META-INF/accesstransformer.cfg')
-if (at.exists()) {
-    minecraft.accessTransformers.file at
-}
+neoForge {
+    version = "${neo_version}"
 
-runs {
-    configureEach {
-        modSource project.sourceSets.main
-    }
-    client {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-    }
-    server {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        programArgument '--nogui'
+    parchment {
+        minecraftVersion = "${parchment_minecraft}"
+        mappingsVersion = "${parchment_version}"
     }
 
-    gameTestServer {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        configureEach {
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
     }
 
-    data {
-        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
     }
 }
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
 repositories {
-    maven { url 'https://libs.azuredoom.com:4443/mods' }
-    maven { url "https://minecraft.curseforge.com/api/maven/" }
-    maven { url "https://cfa2.cursemaven.com" }
-    maven { url 'https://api.modrinth.com/maven' }
-    maven { url "https://maven.theillusivec4.top/" }
     mavenCentral()
+    google()
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
     implementation "mod.azure.azurelib:azurelib-neo-${minecraft_version}:${azurelib_version}"
-    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
-    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+	//implementation "io.wispforest:accessories-neoforge:${project.accessories_version}"
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
+    implementation "curse.maven:accessories-938917:5480776"
 }
 
 if (file('key.properties').exists()) {
@@ -67,7 +67,7 @@ if (file('key.properties').exists()) {
                 slug = "azurelib"
             }
             requires {
-                slug = "curios"
+                slug = "accessories"
             }
         }
         modrinth {
@@ -78,7 +78,7 @@ if (file('key.properties').exists()) {
                 slug = "azurelib"
             }
             requires {
-                slug = "curios"
+                slug = "accessories"
             }
         }
     }

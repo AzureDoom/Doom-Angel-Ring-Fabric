@@ -28,7 +28,7 @@
     "fabric-api": "*",
     "java": ">=17",
     "minecraft": "~${minecraft_version}",
-    "trinkets": ">=${trinkets_version}",
+    "accessories": ">=${accessories_version}",
     "azurelib": ">=${azurelib_version}"
   }
 }

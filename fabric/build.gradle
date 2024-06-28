@@ -1,32 +1,21 @@
 plugins {
     id 'multiloader-loader'
-    id 'fabric-loom' version '1.6-SNAPSHOT'
-    id 'me.modmuss50.mod-publish-plugin' version "${modmuss50_mod_publish_version}"
-}
-
-repositories {
-    mavenCentral()
-    maven { url 'https://libs.azuredoom.com:4443/mods' }
-    maven { url 'https://api.modrinth.com/maven' }
-    maven { url 'https://cfa2.cursemaven.com' }
-    maven { url 'https://plugins.gradle.org/m2/' }
-    maven { url 'https://maven.terraformersmc.com/' }
-    maven { url 'https://maven.terraformersmc.com/releases' } // modmenu
-    maven { url 'https://maven.kosmx.dev/' }
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://maven.ladysnake.org/releases' }
+    id 'fabric-loom' version "${fabric_loom_version}"
+    id 'me.modmuss50.mod-publish-plugin'
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     modImplementation "mod.azure.azurelib:azurelib-fabric-${minecraft_version}:${azurelib_version}"
     modApi "com.terraformersmc:modmenu:${modmenu_version}"
-    modImplementation "maven.modrinth:trinkets:3.9.0"
-    modApi include("org.ladysnake.cardinal-components-api:cardinal-components-base:${cca_version}")
-    modApi include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${cca_version}")
+    modImplementation "curse.maven:accessories-938917:5480778"
+    modImplementation "curse.maven:cloth-config-348521:5424575"
 }
 
 loom {
@@ -75,7 +64,7 @@ if (file('key.properties').exists()) {
                 slug = "azurelib"
             }
             requires {
-                slug = "trinkets"
+                slug = "accessories"
             }
         }
         modrinth {
@@ -89,7 +78,7 @@ if (file('key.properties').exists()) {
                 slug = "azurelib"
             }
             requires {
-                slug = "trinkets"
+                slug = "accessories"
             }
         }
     }
